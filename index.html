@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Long Jump Analyzer | Gain = MAX(i) - MAX(i-1)</title>
+    <title>LongJump Analyzer</title>
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
     <style>
         * {
@@ -112,14 +112,25 @@
             margin-bottom: 1rem;
             font-size: 0.75rem;
             display: flex;
-            flex-wrap: wrap;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             gap: 0.8rem;
             font-family: 'JetBrains Mono', monospace;
             border: 1px solid #2a4c7a;
+            white-space: nowrap;
         }
 
         .stats-mini span {
             color: #9ad7ff;
+            display: inline-flex;
+            align-items: baseline;
+            gap: 0.3rem;
+        }
+
+        .stats-mini strong {
+            color: #0ff;
+            font-weight: 700;
+            margin-left: 0.2rem;
         }
 
         textarea {
@@ -263,15 +274,6 @@
             accent-color: #0ff;
         }
 
-        footer {
-            text-align: center;
-            font-size: 0.7rem;
-            color: #5f8fbf;
-            margin-top: 1.5rem;
-            padding-bottom: 1rem;
-            opacity: 0.7;
-        }
-
         @media (max-width: 800px) {
             body { padding: 1rem; }
         }
@@ -295,26 +297,26 @@
     <div class="card">
         <div class="card-header">
             <h2>Long Jump</h2>
-            <div class="badge"></div>
+            <div class="badge">Distance Prediction</div>
         </div>
 
         <div class="compare-layout">
             <div class="data-panel panel-a">
                 <h3>🔷 Data 01</h3>
                 <div id="statsA" class="stats-mini">⟳ Waiting for data</div>
-                <textarea id="dataA" placeholder="Paste Strafe data here (multi-line support)..."></textarea>
+                <textarea id="dataA" placeholder=""></textarea>
                 <div class="btn-group">
-                    <button class="btn-sm" id="exampleA">◢ Load WR Data</button>
-                    <button class="btn-sm primary" id="clearA">⌧ Clear</button>
+                    <button class="btn-sm" id="exampleA">Load WR</button>
+                    <button class="btn-sm primary" id="clearA">Clear</button>
                 </div>
             </div>
             <div class="data-panel panel-b">
                 <h3>🔶 Data 02</h3>
                 <div id="statsB" class="stats-mini">⟳ No data (empty by default)</div>
-                <textarea id="dataB" placeholder="Paste Strafe data here (optional)..."></textarea>
+                <textarea id="dataB" placeholder=""></textarea>
                 <div class="btn-group">
-                    <button class="btn-sm" id="exampleB">◢ Load Example B (optional)</button>
-                    <button class="btn-sm primary" id="clearB">⌧ Clear</button>
+                    <button class="btn-sm" id="exampleB">Load WR</button>
+                    <button class="btn-sm primary" id="clearB">Clear</button>
                 </div>
             </div>
         </div>
@@ -322,7 +324,7 @@
         <div class="option-bar">
             <label class="switch-label">
                 <input type="checkbox" id="keyPointsOnlyCheckbox">
-                <span>🔗 KEY POINTS ONLY (Frame 0 → MAX → Last Frame)</span>
+                <span>Simple</span>
             </label>
         </div>
 
@@ -335,7 +337,7 @@
         <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
             <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
                 <div style="flex:1; min-width: 260px;">
-                    <div class="stats-title" style="color:#60a5fa; margin-bottom:0.5rem;">📡 Data 01 · PER-STRAFE</div>
+                    <div class="stats-title" style="color:#60a5fa; margin-bottom:0.5rem;">Data 01</div>
                     <div class="stats-table-wrapper">
                         <table class="stats-table" id="tableA">
                             <thead><tr><th>STRAFE</th><th>FRAMES</th><th>START</th><th>MAX</th><th>END</th><th>GAIN</th></tr></thead>
@@ -344,7 +346,7 @@
                     </div>
                 </div>
                 <div style="flex:1; min-width: 260px;">
-                    <div class="stats-title" style="color:#f97316; margin-bottom:0.5rem;">📡 Data 02 · PER-STRAFE</div>
+                    <div class="stats-title" style="color:#f97316; margin-bottom:0.5rem;">Data 02</div>
                     <div class="stats-table-wrapper">
                         <table class="stats-table" id="tableB">
                             <thead><tr><th>STRAFE</th><th>FRAMES</th><th>START</th><th>MAX</th><th>END</th><th>GAIN</th></tr></thead>
@@ -355,12 +357,11 @@
             </div>
         </div>
     </div>
-    <footer></footer>
 </div>
 
 <script>
-    // ========== DEFAULT WR DATA (used to detect changes) ==========
-    const DEFAULT_WR_DATA = `[Initial: 234.147]
+    // ========== DEFAULT WR DATA (Initial corrected to 234.139) ==========
+    const DEFAULT_WR_DATA = `[Initial: 234.139]
 Strafe 01: | 234.139 | 234.139 | 234.710 | 235.765 | 236.718 | 237.591 | 238.343 | 238.889 | 239.404 | 239.761 |
 Strafe 02: | 240.212 | 241.313 | 242.149 | 243.182 | 244.046 | 244.650 | 244.997 | 245.198 | 245.171 |
 Strafe 03: | 246.142 | 246.851 | 247.850 | 248.731 | 249.351 | 249.699 | 249.738 | 249.488 | 248.936 |
@@ -399,16 +400,17 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         return `Strafe ${num.toString().padStart(2, '0')}`;
     }
 
-    // ========== PARSER ==========
+    // ========== PARSER (brackets optional, supports "Initial: xxx" without brackets) ==========
     function parseKZData(text, dataId = "stream") {
         const lines = text.split(/\r?\n/);
         let metadata = { initial: null, maxSpeed: null, gain: null, w: null, ol: null, da: null };
         
-        const initialRegex = /\[Initial:\s*([\d.]+)\]/;
-        const maxRegex = /\[Max:\s*([\d.]+)\s*\(\+([\d.]+)\)/;
-        const wRegex = /\[W:\s*(\d+)\]/;
-        const olRegex = /\[OL:\s*(\d+)\]/;
-        const daRegex = /\[DA:\s*(\d+)\]/;
+        // Regex patterns: brackets are optional
+        const initialRegex = /(?:\[)?Initial:\s*([\d.]+)(?:\])?/i;
+        const maxRegex = /(?:\[)?Max:\s*([\d.]+)\s*\(\+([\d.]+)\)(?:\])?/i;
+        const wRegex = /(?:\[)?W:\s*(\d+)(?:\])?/i;
+        const olRegex = /(?:\[)?OL:\s*(\d+)(?:\])?/i;
+        const daRegex = /(?:\[)?DA:\s*(\d+)(?:\])?/i;
         
         for (let i = 0; i < Math.min(lines.length, 10); i++) {
             const line = lines[i];
@@ -450,7 +452,7 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         if (initialVal === null && rawStrafeList.length > 0 && rawStrafeList[0].data.length > 0) {
             initialVal = rawStrafeList[0].data[0];
         }
-        if (initialVal === null) throw new Error(`[${dataId}] No Initial value found. Add [Initial: xxx] at top.`);
+        if (initialVal === null) throw new Error(`[${dataId}] No Initial value found. Add "Initial: xxx" at top (with or without brackets).`);
         
         const strafeList = [];
         for (let i = 0; i < rawStrafeList.length; i++) {
@@ -528,7 +530,7 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         const tbody = document.querySelector(`#${tableId} tbody`);
         if (!data) {
             statsDiv.innerHTML = `<span>⚠️ No data</span>`;
-            if (tbody) tbody.innerHTML = '<tr><td colspan="6">— no data —</tbody>';
+            if (tbody) tbody.innerHTML = '<tr><td colspan="6">— no data —</td></tr>';
             return;
         }
         const { metadata, strafes, totalFrames } = data;
@@ -537,10 +539,10 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         const gainTrunc = metadata.gain !== null ? truncTo3Decimals(metadata.gain) : '';
         const gainHtml = metadata.gain !== null ? ` (+${gainTrunc})` : '';
         statsDiv.innerHTML = `
-            <span>🎯 Initial (part of Strafe 01): <strong style="color:#0ff">${initialTrunc}</strong></span>
-            <span>⚡ Global MAX: <strong style="color:#ffb347">${maxTrunc}</strong>${gainHtml}</span>
-            <span>📦 Strafe count: <strong>${strafes.length}</strong></span>
-            <span>🎞️ Total frames (all): <strong>${totalFrames}</strong></span>
+            <span>Initial: <strong style="color:#0ff">${initialTrunc}</strong></span>
+            <span>Max: <strong style="color:#ffb347">${maxTrunc}</strong>${gainHtml}</span>
+            <span>Strafes: <strong>${strafes.length}</strong></span>
+            <span>Frames: <strong>${totalFrames}</strong></span>
         `;
         let html = '';
         for (let s of strafes) {
@@ -560,7 +562,7 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
                 <td style="color:${gainDelta>=0?'#3be87e':'#ff6b6b'}">${gainDelta>=0?'+':''}${truncTo3Decimals(gainDelta)}</td>
             </tr>`;
         }
-        if (html === '') html = '<tr><td colspan="6">No valid segments</tbody>';
+        if (html === '') html = '<tr><td colspan="6">No valid segments</td></tr>';
         if (tbody) tbody.innerHTML = html;
     }
     
@@ -628,7 +630,6 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         const keyPointsOnly = document.getElementById('keyPointsOnlyCheckbox').checked;
         const seriesList = [];
         
-        // Data 01 series name logic
         const dataAName = isDataADefaultWR ? '260_lj_komi (WR)' : 'Data 01';
         
         if (dataA && dataA.continuousData?.length) {
@@ -782,15 +783,10 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
                 axisLine: { show: false }, scale: true
             },
             series: seriesList,
-            toolbox: {
-                feature: { saveAsImage: { title: 'Capture Spectrum', theme: 'dark' }, dataZoom: { title: { zoom: 'Zoom', back: 'Reset' } }, restore: { title: 'Reset View' } },
-                iconStyle: { borderColor: '#0ff' }, right: 20, top: 8, color: '#0ff'
-            },
             dataZoom: [
                 { type: 'slider', start: 0, end: 100, bottom: 12, height: 18, borderColor: '#0ff', fillerColor: '#0ff2', handleStyle: { color: '#0ff' } },
                 { type: 'inside', start: 0, end: 100 }
-            ],
-            title: { show: true, text: keyPointsOnly ? 'KEY POINTS MODE (MAX only)' : 'FULL CURVE MODE (with MAX markers)', left: 'center', top: 6, textStyle: { color: '#0ff6', fontSize: 12, fontWeight: 'normal', fontFamily: 'monospace' } }
+            ]
         };
         currentChart.setOption(option, true);
         window.addEventListener('resize', () => currentChart && currentChart.resize());
@@ -814,7 +810,6 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         } catch(e) { parsedB = null; updateStatsAndTable(null, 'statsB', 'tableB', '#f97316'); errMsg += `[Data 02] ${e.message}<br>`; }
         if (errMsg) { errDiv.style.display = 'block'; errDiv.innerHTML = errMsg; }
         
-        // Determine if Data 01 currently contains the default WR data
         const isDefaultWR = (textA.trim() === DEFAULT_WR_DATA);
         renderComparison(parsedA, parsedB, isDefaultWR);
     }
@@ -828,8 +823,8 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
         updateBoth();
     }
     
-    function loadExampleB() {
-        document.getElementById('dataB').value = '';
+    function loadWRForB() {
+        document.getElementById('dataB').value = DEFAULT_WR_DATA;
         updateBoth();
     }
     
@@ -838,7 +833,7 @@ Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336
     
     document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('exampleA').addEventListener('click', loadExampleA);
-        document.getElementById('exampleB').addEventListener('click', loadExampleB);
+        document.getElementById('exampleB').addEventListener('click', loadWRForB);
         document.getElementById('clearA').addEventListener('click', clearA);
         document.getElementById('clearB').addEventListener('click', clearB);
         document.getElementById('dataA').addEventListener('input', updateBoth);
