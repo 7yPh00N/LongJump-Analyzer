@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>LongJump Analyzer</title>
-    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js">
+    </script>
     <style>
         * {
             margin: 0;
@@ -93,8 +94,14 @@
             box-shadow: 0 0 12px #0ff2;
         }
 
-        .panel-a h3 { border-left-color: #3b82f6; color: #60a5fa; }
-        .panel-b h3 { border-left-color: #f97316; color: #f97316; }
+        .panel-a h3 {
+            border-left-color: #3b82f6;
+            color: #60a5fa;
+        }
+        .panel-b h3 {
+            border-left-color: #f97316;
+            color: #f97316;
+        }
 
         .data-panel h3 {
             font-size: 1.1rem;
@@ -103,6 +110,9 @@
             padding-left: 12px;
             font-weight: 500;
             letter-spacing: 1px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
         }
 
         .stats-mini {
@@ -275,7 +285,9 @@
         }
 
         @media (max-width: 800px) {
-            body { padding: 1rem; }
+            body {
+                padding: 1rem;
+            }
         }
 
         ::-webkit-scrollbar {
@@ -293,556 +305,620 @@
     </style>
 </head>
 <body>
-<div class="container">
-    <div class="card">
-        <div class="card-header">
-            <h2>Long Jump</h2>
-            <div class="badge">Distance Prediction</div>
-        </div>
-
-        <div class="compare-layout">
-            <div class="data-panel panel-a">
-                <h3>🔷 Data 01</h3>
-                <div id="statsA" class="stats-mini">⟳ Waiting for data</div>
-                <textarea id="dataA" placeholder=""></textarea>
-                <div class="btn-group">
-                    <button class="btn-sm" id="exampleA">Load WR</button>
-                    <button class="btn-sm primary" id="clearA">Clear</button>
-                </div>
+    <div class="container">
+        <div class="card">
+            <div class="card-header">
+                <h2>Long Jump</h2>
+                <div class="badge">Distance Prediction</div>
             </div>
-            <div class="data-panel panel-b">
-                <h3>🔶 Data 02</h3>
-                <div id="statsB" class="stats-mini">⟳ No data (empty by default)</div>
-                <textarea id="dataB" placeholder=""></textarea>
-                <div class="btn-group">
-                    <button class="btn-sm" id="exampleB">Load WR</button>
-                    <button class="btn-sm primary" id="clearB">Clear</button>
-                </div>
-            </div>
-        </div>
 
-        <div class="option-bar">
-            <label class="switch-label">
-                <input type="checkbox" id="keyPointsOnlyCheckbox">
-                <span>Simple</span>
-            </label>
-        </div>
-
-        <div id="globalError" class="error-msg" style="display: none;"></div>
-
-        <div class="chart-container">
-            <div id="compareChart"></div>
-        </div>
-
-        <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
-            <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
-                <div style="flex:1; min-width: 260px;">
-                    <div class="stats-title" style="color:#60a5fa; margin-bottom:0.5rem;">Data 01</div>
-                    <div class="stats-table-wrapper">
-                        <table class="stats-table" id="tableA">
-                            <thead><tr><th>STRAFE</th><th>FRAMES</th><th>START</th><th>MAX</th><th>END</th><th>GAIN</th></tr></thead>
-                            <tbody><tr><td colspan="6">-- waiting --</tbody>
-                        </table>
+            <div class="compare-layout">
+                <div class="data-panel panel-a">
+                    <h3 id="titleA">🔷 Data 01</h3>
+                    <div id="statsA" class="stats-mini">⟳ Waiting for data</div>
+                    <textarea id="dataA" placeholder=""></textarea>
+                    <div class="btn-group">
+                        <button class="btn-sm" id="exampleA">Load WR</button>
+                        <button class="btn-sm primary" id="clearA">Clear</button>
                     </div>
                 </div>
-                <div style="flex:1; min-width: 260px;">
-                    <div class="stats-title" style="color:#f97316; margin-bottom:0.5rem;">Data 02</div>
-                    <div class="stats-table-wrapper">
-                        <table class="stats-table" id="tableB">
-                            <thead><tr><th>STRAFE</th><th>FRAMES</th><th>START</th><th>MAX</th><th>END</th><th>GAIN</th></tr></thead>
-                            <tbody><tr><td colspan="6">-- no data --</tbody>
-                        </table>
+                <div class="data-panel panel-b">
+                    <h3 id="titleB">🔶 Data 02</h3>
+                    <div id="statsB" class="stats-mini">⟳ No data (empty by default)</div>
+                    <textarea id="dataB" placeholder=""></textarea>
+                    <div class="btn-group">
+                        <button class="btn-sm" id="exampleB">Load WR</button>
+                        <button class="btn-sm primary" id="clearB">Clear</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="option-bar">
+                <label class="switch-label">
+                    <input type="checkbox" id="keyPointsOnlyCheckbox">
+                    <span>Simple</span>
+                </label>
+            </div>
+
+            <div id="globalError" class="error-msg" style="display: none;"></div>
+
+            <div class="chart-container">
+                <div id="compareChart"></div>
+            </div>
+
+            <div style="padding: 0 1.5rem 1.5rem 1.5rem;">
+                <div style="display: flex; flex-wrap: wrap; gap: 1.5rem;">
+                    <div style="flex:1; min-width: 260px;">
+                        <div class="stats-title" style="color:#60a5fa; margin-bottom:0.5rem;" id="tableTitleA">Data 01</div>
+                        <div class="stats-table-wrapper">
+                            <table class="stats-table" id="tableA">
+                                <thead><tr><th>STRAFE</th><th>FRAMES</th><th>START</th><th>MAX</th><th>END</th><th>GAIN</th></tr></thead>
+                                <tbody><tr><td colspan="6">-- waiting --</tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div style="flex:1; min-width: 260px;">
+                        <div class="stats-title" style="color:#f97316; margin-bottom:0.5rem;" id="tableTitleB">Data 02</div>
+                        <div class="stats-table-wrapper">
+                            <table class="stats-table" id="tableB">
+                                <thead><tr><th>STRAFE</th><th>FRAMES</th><th>START</th><th>MAX</th><th>END</th><th>GAIN</th></tr></thead>
+                                <tbody><tr><td colspan="6">-- no data --</tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    // ========== DEFAULT WR DATA (Initial corrected to 234.139) ==========
-    const DEFAULT_WR_DATA = `[Initial: 234.139]
-Strafe 01: | 234.139 | 234.139 | 234.710 | 235.765 | 236.718 | 237.591 | 238.343 | 238.889 | 239.404 | 239.761 |
-Strafe 02: | 240.212 | 241.313 | 242.149 | 243.182 | 244.046 | 244.650 | 244.997 | 245.198 | 245.171 |
-Strafe 03: | 246.142 | 246.851 | 247.850 | 248.731 | 249.351 | 249.699 | 249.738 | 249.488 | 248.936 |
-Strafe 04: | 250.080 | 251.475 | 252.317 | 253.099 | 253.536 | 253.570 | 253.346 | 252.868 | 252.379 |
-Strafe 05: | 253.292 | 254.609 | 255.522 | 256.184 | 256.648 | 256.838 | 256.770 | 256.457 | 256.049 |
-Strafe 06: | 256.986 | 257.699 | 258.226 | 258.672 | 258.936 | 258.944 | 258.805 | 258.801 |
-Strafe 07: | 259.322 | 259.315 | 259.316 | 259.559 | 259.824 | 259.939 | 259.902 | 259.748 |
-Strafe 08: | 260.095 | 260.092 | 260.090 | 260.080 | 260.217 | 260.297 | 260.336 | 260.353 | 260.361 | 260.353 | 260.354 |`;
+    <script>
+        // ========== UPDATED DEFAULT WR DATA (no indentation) ==========
+        const DEFAULT_WR_DATA = `[File: 260_lj_komi.dem] [Initial: 233.979]
+Strafe 01: | 233.979 | 233.979 | 234.554 | 235.590 | 236.550 | 237.424 | 238.180 | 238.725 | 239.246 | 239.605 |
+Strafe 02: | 240.041 | 241.148 | 241.984 | 243.017 | 243.885 | 244.493 | 244.846 | 245.048 | 245.006 |
+Strafe 03: | 245.982 | 246.690 | 247.698 | 248.581 | 249.198 | 249.553 | 249.574 | 249.326 | 248.872 |
+Strafe 04: | 250.022 | 251.399 | 252.262 | 253.030 | 253.473 | 253.556 | 253.340 | 252.866 | 252.374 |
+Strafe 05: | 253.294 | 254.592 | 255.508 | 256.175 | 256.637 | 256.828 | 256.762 | 256.454 | 256.033 |
+Strafe 06: | 256.970 | 257.685 | 258.216 | 258.660 | 258.932 | 258.942 | 258.787 | 258.780 |
+Strafe 07: | 259.309 | 259.303 | 259.308 | 259.549 | 259.821 | 259.917 | 259.883 | 259.734 |
+Strafe 08: | 260.080 | 260.079 | 260.079 | 260.074 | 260.197 | 260.277 | 260.319 | 260.342 | 260.347 | 260.348 | 260.351 |`;
 
-    // ========== PRECISION TRUNCATION (STRING-BASED, NO ROUNDING) ==========
-    function truncTo3Decimals(num) {
-        if (num === null || isNaN(num)) return "?";
-        let str = num.toString();
-        if (str.includes('e')) {
-            return (Math.floor(num * 1000) / 1000).toFixed(3);
-        }
-        let dotIndex = str.indexOf('.');
-        if (dotIndex === -1) return str + ".000";
-        let integerPart = str.substring(0, dotIndex);
-        let decimalPart = str.substring(dotIndex + 1);
-        if (decimalPart.length >= 3) {
-            decimalPart = decimalPart.substring(0, 3);
-        } else {
-            decimalPart = decimalPart.padEnd(3, '0');
-        }
-        return integerPart + "." + decimalPart;
-    }
-
-    function truncNumber(num) {
-        if (num === null || isNaN(num)) return 0;
-        let truncatedStr = truncTo3Decimals(num);
-        return parseFloat(truncatedStr);
-    }
-
-    function formatStrafeName(num) {
-        return `Strafe ${num.toString().padStart(2, '0')}`;
-    }
-
-    // ========== PARSER (brackets optional, supports "Initial: xxx" without brackets) ==========
-    function parseKZData(text, dataId = "stream") {
-        const lines = text.split(/\r?\n/);
-        let metadata = { initial: null, maxSpeed: null, gain: null, w: null, ol: null, da: null };
-        
-        // Regex patterns: brackets are optional
-        const initialRegex = /(?:\[)?Initial:\s*([\d.]+)(?:\])?/i;
-        const maxRegex = /(?:\[)?Max:\s*([\d.]+)\s*\(\+([\d.]+)\)(?:\])?/i;
-        const wRegex = /(?:\[)?W:\s*(\d+)(?:\])?/i;
-        const olRegex = /(?:\[)?OL:\s*(\d+)(?:\])?/i;
-        const daRegex = /(?:\[)?DA:\s*(\d+)(?:\])?/i;
-        
-        for (let i = 0; i < Math.min(lines.length, 10); i++) {
-            const line = lines[i];
-            if (!line.trim()) continue;
-            if (!metadata.initial) { let m = line.match(initialRegex); if(m) metadata.initial = parseFloat(m[1]); }
-            if (!metadata.maxSpeed) { let m = line.match(maxRegex); if(m) { metadata.maxSpeed = parseFloat(m[1]); metadata.gain = parseFloat(m[2]); } }
-            if (metadata.w === null) { let m = line.match(wRegex); if(m) metadata.w = parseInt(m[1]); }
-            if (metadata.ol === null) { let m = line.match(olRegex); if(m) metadata.ol = parseInt(m[1]); }
-            if (metadata.da === null) { let m = line.match(daRegex); if(m) metadata.da = parseInt(m[1]); }
-        }
-        
-        const rawStrafeList = [];
-        let currentStrafe = null;
-        const strafeHeaderRegex = /Strafe\s+(\d+)\s*:/i;
-        
-        for (let line of lines) {
-            const trimmed = line.trim();
-            if (trimmed === "") continue;
-            const headerMatch = trimmed.match(strafeHeaderRegex);
-            if (headerMatch) {
-                if (currentStrafe && currentStrafe.data.length) rawStrafeList.push(currentStrafe);
-                const strafeNum = parseInt(headerMatch[1]);
-                currentStrafe = { name: formatStrafeName(strafeNum), data: [] };
-                const afterColon = line.substring(headerMatch[0].length);
-                const values = extractNumbersFromLine(afterColon);
-                currentStrafe.data.push(...values);
+        function truncTo3Decimals(num) {
+            if (num === null || isNaN(num)) return "?";
+            let str = num.toString();
+            if (str.includes('e')) {
+                return (Math.floor(num * 1000) / 1000).toFixed(3);
+            }
+            let dotIndex = str.indexOf('.');
+            if (dotIndex === -1) return str + ".000";
+            let integerPart = str.substring(0, dotIndex);
+            let decimalPart = str.substring(dotIndex + 1);
+            if (decimalPart.length >= 3) {
+                decimalPart = decimalPart.substring(0, 3);
             } else {
-                if (currentStrafe) {
-                    const values = extractNumbersFromLine(line);
+                decimalPart = decimalPart.padEnd(3, '0');
+            }
+            return integerPart + "." + decimalPart;
+        }
+
+        function truncNumber(num) {
+            if (num === null || isNaN(num)) return 0;
+            let truncatedStr = truncTo3Decimals(num);
+            return parseFloat(truncatedStr);
+        }
+
+        function formatStrafeName(num) {
+            return `Strafe ${num.toString().padStart(2, '0')}`;
+        }
+
+        function parseKZData(text, dataId) {
+            const lines = text.split(/\r?\n/);
+            let metadata = { initial: null, maxSpeed: null, gain: null, w: null, ol: null, da: null, file: null };
+
+            const initialRegex = /(?:\[)?Initial:\s*([\d.]+)(?:\])?/i;
+            const maxRegex = /(?:\[)?Max:\s*([\d.]+)\s*\(\+([\d.]+)\)(?:\])?/i;
+            const wRegex = /(?:\[)?W:\s*(\d+)(?:\])?/i;
+            const olRegex = /(?:\[)?OL:\s*(\d+)(?:\])?/i;
+            const daRegex = /(?:\[)?DA:\s*(\d+)(?:\])?/i;
+            const fileRegex = /\[File:\s*([^\]]+)\]/i;
+
+            for (let i = 0; i < Math.min(lines.length, 10); i++) {
+                const line = lines[i];
+                if (!line.trim()) continue;
+                if (!metadata.initial) { let m = line.match(initialRegex); if (m) metadata.initial = parseFloat(m[1]); }
+                if (!metadata.maxSpeed) { let m = line.match(maxRegex); if (m) { metadata.maxSpeed = parseFloat(m[1]);
+                        metadata.gain = parseFloat(m[2]); } }
+                if (metadata.w === null) { let m = line.match(wRegex); if (m) metadata.w = parseInt(m[1]); }
+                if (metadata.ol === null) { let m = line.match(olRegex); if (m) metadata.ol = parseInt(m[1]); }
+                if (metadata.da === null) { let m = line.match(daRegex); if (m) metadata.da = parseInt(m[1]); }
+                if (!metadata.file) { let m = line.match(fileRegex); if (m) metadata.file = m[1].trim().replace(/\.dem$/i,
+                    ''); }
+            }
+
+            const rawStrafeList = [];
+            let currentStrafe = null;
+            const strafeHeaderRegex = /Strafe\s+(\d+)\s*:/i;
+
+            for (let line of lines) {
+                const trimmed = line.trim();
+                if (trimmed === "") continue;
+                const headerMatch = trimmed.match(strafeHeaderRegex);
+                if (headerMatch) {
+                    if (currentStrafe && currentStrafe.data.length) rawStrafeList.push(currentStrafe);
+                    const strafeNum = parseInt(headerMatch[1]);
+                    currentStrafe = { name: formatStrafeName(strafeNum), data: [] };
+                    const afterColon = line.substring(headerMatch[0].length);
+                    const values = extractNumbersFromLine(afterColon);
                     currentStrafe.data.push(...values);
+                } else {
+                    if (currentStrafe) {
+                        const values = extractNumbersFromLine(line);
+                        currentStrafe.data.push(...values);
+                    }
                 }
             }
-        }
-        if (currentStrafe && currentStrafe.data.length) rawStrafeList.push(currentStrafe);
-        
-        if (rawStrafeList.length === 0) throw new Error(`[${dataId}] No valid Strafe data found.`);
-        
-        let initialVal = metadata.initial;
-        if (initialVal === null && rawStrafeList.length > 0 && rawStrafeList[0].data.length > 0) {
-            initialVal = rawStrafeList[0].data[0];
-        }
-        if (initialVal === null) throw new Error(`[${dataId}] No Initial value found. Add "Initial: xxx" at top (with or without brackets).`);
-        
-        const strafeList = [];
-        for (let i = 0; i < rawStrafeList.length; i++) {
-            const s = rawStrafeList[i];
-            if (i === 0) {
-                strafeList.push({
+            if (currentStrafe && currentStrafe.data.length) rawStrafeList.push(currentStrafe);
+
+            if (rawStrafeList.length === 0) throw new Error(`[${dataId}] No valid Strafe data found.`);
+
+            let initialVal = metadata.initial;
+            if (initialVal === null && rawStrafeList.length > 0 && rawStrafeList[0].data.length > 0) {
+                initialVal = rawStrafeList[0].data[0];
+            }
+            if (initialVal === null) throw new Error(`[${dataId}] No Initial value found. Add "Initial: xxx" at top (with or without brackets).`);
+
+            const strafeList = [];
+            for (let i = 0; i < rawStrafeList.length; i++) {
+                const s = rawStrafeList[i];
+                if (i === 0) {
+                    strafeList.push({
+                        name: s.name,
+                        data: [initialVal, ...s.data],
+                        originalFrameCount: s.data.length
+                    });
+                } else {
+                    strafeList.push({
+                        ...s,
+                        originalFrameCount: s.data.length
+                    });
+                }
+            }
+
+            const strafeMaxValues = [];
+            for (let s of strafeList) {
+                const maxVal = Math.max(...s.data);
+                strafeMaxValues.push(maxVal);
+            }
+
+            for (let i = 0; i < strafeList.length; i++) {
+                let gainVal;
+                if (i === 0) {
+                    gainVal = strafeMaxValues[0] - initialVal;
+                } else {
+                    gainVal = strafeMaxValues[i] - strafeMaxValues[i - 1];
+                }
+                strafeList[i].gainDeltaMax = gainVal;
+                strafeList[i].maxValue = strafeMaxValues[i];
+            }
+
+            let continuousData = [];
+            let segments = [];
+            for (let idx = 0; idx < strafeList.length; idx++) {
+                const s = strafeList[idx];
+                if (s.data.length === 0) continue;
+                const startIdx = continuousData.length;
+                continuousData.push(...s.data);
+                const endIdx = continuousData.length - 1;
+                segments.push({
                     name: s.name,
-                    data: [initialVal, ...s.data],
-                    originalFrameCount: s.data.length
-                });
-            } else {
-                strafeList.push({
-                    ...s,
-                    originalFrameCount: s.data.length
+                    start: startIdx,
+                    end: endIdx,
+                    data: s.data.slice()
                 });
             }
+
+            const globalMax = Math.max(...continuousData);
+            if (metadata.maxSpeed === null || metadata.maxSpeed < globalMax) metadata.maxSpeed = globalMax;
+            if (metadata.gain === null && metadata.initial !== null) metadata.gain = metadata.maxSpeed - metadata.initial;
+
+            const totalFrames = continuousData.length;
+
+            return { metadata, strafes: strafeList, continuousData, segments, totalFrames };
         }
-        
-        const strafeMaxValues = [];
-        for (let s of strafeList) {
-            const maxVal = Math.max(...s.data);
-            strafeMaxValues.push(maxVal);
-        }
-        
-        for (let i = 0; i < strafeList.length; i++) {
-            let gainVal;
-            if (i === 0) {
-                gainVal = strafeMaxValues[0] - initialVal;
-            } else {
-                gainVal = strafeMaxValues[i] - strafeMaxValues[i-1];
+
+        function extractNumbersFromLine(line) {
+            const parts = line.split('|');
+            const values = [];
+            for (let part of parts) {
+                let cleaned = part.trim().replace(/Strafe\s+\d+\s*:/i, '').trim();
+                if (cleaned === "") continue;
+                let num = parseFloat(cleaned);
+                if (!isNaN(num) && isFinite(num)) values.push(num);
             }
-            strafeList[i].gainDeltaMax = gainVal;
-            strafeList[i].maxValue = strafeMaxValues[i];
+            return values;
         }
-        
-        let continuousData = [];
-        let segments = [];
-        for (let idx = 0; idx < strafeList.length; idx++) {
-            const s = strafeList[idx];
-            if (s.data.length === 0) continue;
-            const startIdx = continuousData.length;
-            continuousData.push(...s.data);
-            const endIdx = continuousData.length - 1;
-            segments.push({
+
+        function updateStatsAndTable(data, statsDivId, tableId, neonColor) {
+            const statsDiv = document.getElementById(statsDivId);
+            const tbody = document.querySelector(`#${tableId} tbody`);
+            if (!data) {
+                statsDiv.innerHTML = `<span>⚠️ No data</span>`;
+                if (tbody) tbody.innerHTML = '<tr><td colspan="6">— no data —</td></tr>';
+                return;
+            }
+            const { metadata, strafes, totalFrames } = data;
+            const initialTrunc = truncTo3Decimals(metadata.initial);
+            const maxTrunc = truncTo3Decimals(metadata.maxSpeed);
+            const gainTrunc = metadata.gain !== null ? truncTo3Decimals(metadata.gain) : '';
+            const gainHtml = metadata.gain !== null ? ` (+${gainTrunc})` : '';
+            statsDiv.innerHTML = `
+                <span>Initial: <strong style="color:#0ff">${initialTrunc}</strong></span>
+                <span>Max: <strong style="color:#ffb347">${maxTrunc}</strong>${gainHtml}</span>
+                <span>Strafes: <strong>${strafes.length}</strong></span>
+                <span>Frames: <strong>${totalFrames}</strong></span>
+            `;
+            let html = '';
+            for (let s of strafes) {
+                const arr = s.data;
+                if (!arr.length) continue;
+                const startVal = arr[0];
+                const maxVal = s.maxValue;
+                const endVal = arr[arr.length - 1];
+                const gainDelta = s.gainDeltaMax;
+                const frameCount = s.originalFrameCount || arr.length;
+                html += `<tr>
+                    <td><strong>${s.name}</strong></td>
+                    <td>${frameCount}</td>
+                    <td>${truncTo3Decimals(startVal)}</td>
+                    <td style="color:${neonColor}; font-weight:700;">${truncTo3Decimals(maxVal)}</td>
+                    <td>${truncTo3Decimals(endVal)}</td>
+                    <td style="color:${gainDelta>=0?'#3be87e':'#ff6b6b'}">${gainDelta>=0?'+':''}${truncTo3Decimals(gainDelta)}</td>
+                </tr>`;
+            }
+            if (html === '') html = '<tr><td colspan="6">No valid segments</td></tr>';
+            if (tbody) tbody.innerHTML = html;
+        }
+
+        function getKeyPoints(continuousData, segments) {
+            const points = new Map();
+            if (continuousData.length > 0) points.set(0, continuousData[0]);
+            for (let seg of segments) {
+                let maxVal = -Infinity,
+                    maxIdx = seg.start;
+                for (let i = seg.start; i <= seg.end; i++) {
+                    if (continuousData[i] > maxVal) { maxVal = continuousData[i];
+                        maxIdx = i; }
+                }
+                if (isFinite(maxVal)) points.set(maxIdx, maxVal);
+            }
+            const lastIdx = continuousData.length - 1;
+            if (lastIdx >= 0 && lastIdx !== 0) points.set(lastIdx, continuousData[lastIdx]);
+            const sorted = Array.from(points.entries()).sort((a, b) => a[0] - b[0]);
+            return sorted.map(([idx, val]) => [idx, val]);
+        }
+
+        function generateMaxMarkers(continuousData, segments, glowColor) {
+            const points = [];
+            for (let seg of segments) {
+                let maxVal = -Infinity,
+                    maxIdx = seg.start;
+                for (let i = seg.start; i <= seg.end; i++) {
+                    if (continuousData[i] > maxVal) { maxVal = continuousData[i];
+                        maxIdx = i; }
+                }
+                if (isFinite(maxVal)) {
+                    const displayVal = truncTo3Decimals(maxVal);
+                    points.push({
+                        name: `${seg.name} MAX`,
+                        coord: [maxIdx, maxVal],
+                        value: displayVal,
+                        symbol: 'circle',
+                        symbolSize: 12,
+                        label: {
+                            show: true,
+                            formatter: `${displayVal}`,
+                            position: 'top',
+                            offset: [0, -10],
+                            color: glowColor,
+                            fontWeight: 'bold',
+                            fontSize: 12,
+                            backgroundColor: '#0a1222dd',
+                            padding: [2, 6, 2, 6],
+                            borderRadius: 8,
+                            borderColor: glowColor,
+                            borderWidth: 1,
+                            fontFamily: 'monospace'
+                        },
+                        itemStyle: { color: glowColor, borderColor: '#000', borderWidth: 2, shadowBlur: 8,
+                            shadowColor: glowColor }
+                    });
+                }
+            }
+            return points;
+        }
+
+        let currentChart = null;
+
+        function renderComparison(dataA, dataB, nameA, nameB) {
+            const dom = document.getElementById('compareChart');
+            if (!dom) return;
+            if (currentChart) currentChart.dispose();
+            currentChart = echarts.init(dom);
+
+            const keyPointsOnly = document.getElementById('keyPointsOnlyCheckbox').checked;
+            const seriesList = [];
+
+            if (dataA && dataA.continuousData?.length) {
+                if (keyPointsOnly) {
+                    const keyPoints = getKeyPoints(dataA.continuousData, dataA.segments);
+                    const maxMarkers = generateMaxMarkers(dataA.continuousData, dataA.segments, '#3b82f6');
+                    seriesList.push({
+                        name: nameA,
+                        type: 'line',
+                        data: keyPoints,
+                        smooth: false,
+                        symbol: 'none',
+                        lineStyle: { width: 2.5, color: '#3b82f6', shadowBlur: 12, shadowColor: '#3b82f6',
+                            type: 'solid' },
+                        areaStyle: { opacity: 0.08, color: '#3b82f6' },
+                        emphasis: { focus: 'series' },
+                        tooltip: {
+                            formatter: (params) => {
+                                if (!params.data) return '';
+                                const frameIdx = params.data[0];
+                                const speed = params.data[1];
+                                let label = '';
+                                if (frameIdx === 0) label = 'Frame 0 (Strafe 01 start)';
+                                else if (frameIdx === dataA.continuousData.length - 1) label = 'Last Frame';
+                                else label = 'MAX';
+                                return `🔵 ${nameA} | Frame ${frameIdx} | ${label}<br/>Predicted Distance: ${truncTo3Decimals(speed)} u`;
+                            }
+                        },
+                        markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true } }
+                    });
+                } else {
+                    const maxMarkers = generateMaxMarkers(dataA.continuousData, dataA.segments, '#3b82f6');
+                    seriesList.push({
+                        name: nameA,
+                        type: 'line',
+                        data: dataA.continuousData,
+                        smooth: false,
+                        symbol: 'none',
+                        lineStyle: { width: 2.5, color: '#3b82f6', shadowBlur: 12, shadowColor: '#3b82f6' },
+                        areaStyle: { opacity: 0.08, color: '#3b82f6' },
+                        emphasis: { focus: 'series' },
+                        tooltip: {
+                            formatter: (params) => {
+                                if (!params[0]) return '';
+                                let idx = params[0].dataIndex;
+                                let spd = params[0].value;
+                                let belong = '';
+                                for (let s of dataA.segments) {
+                                    if (idx >= s.start && idx <= s.end) { belong = s.name; break; }
+                                }
+                                return `🔵 ${nameA} | Frame ${idx} | ${belong}<br/>Predicted Distance: ${truncTo3Decimals(spd)} u`;
+                            }
+                        },
+                        markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true, formatter: (p) => p
+                                    .value, fontSize: 12, fontWeight: 'bold' } }
+                    });
+                }
+            }
+
+            if (dataB && dataB.continuousData?.length) {
+                if (keyPointsOnly) {
+                    const keyPoints = getKeyPoints(dataB.continuousData, dataB.segments);
+                    const maxMarkers = generateMaxMarkers(dataB.continuousData, dataB.segments, '#f97316');
+                    seriesList.push({
+                        name: nameB,
+                        type: 'line',
+                        data: keyPoints,
+                        smooth: false,
+                        symbol: 'none',
+                        lineStyle: { width: 2.5, color: '#f97316', shadowBlur: 12, shadowColor: '#f97316',
+                            type: 'solid' },
+                        areaStyle: { opacity: 0.08, color: '#f97316' },
+                        emphasis: { focus: 'series' },
+                        tooltip: {
+                            formatter: (params) => {
+                                if (!params.data) return '';
+                                const frameIdx = params.data[0];
+                                const speed = params.data[1];
+                                let label = '';
+                                if (frameIdx === 0) label = 'Frame 0 (Strafe 01 start)';
+                                else if (frameIdx === dataB.continuousData.length - 1) label = 'Last Frame';
+                                else label = 'MAX';
+                                return `🟠 ${nameB} | Frame ${frameIdx} | ${label}<br/>Predicted Distance: ${truncTo3Decimals(speed)} u`;
+                            }
+                        },
+                        markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true } }
+                    });
+                } else {
+                    const maxMarkers = generateMaxMarkers(dataB.continuousData, dataB.segments, '#f97316');
+                    seriesList.push({
+                        name: nameB,
+                        type: 'line',
+                        data: dataB.continuousData,
+                        smooth: false,
+                        symbol: 'none',
+                        lineStyle: { width: 2.5, color: '#f97316', shadowBlur: 12, shadowColor: '#f97316' },
+                        areaStyle: { opacity: 0.08, color: '#f97316' },
+                        emphasis: { focus: 'series' },
+                        tooltip: {
+                            formatter: (params) => {
+                                if (!params[0]) return '';
+                                let idx = params[0].dataIndex;
+                                let spd = params[0].value;
+                                let belong = '';
+                                for (let s of dataB.segments) {
+                                    if (idx >= s.start && idx <= s.end) { belong = s.name; break; }
+                                }
+                                return `🟠 ${nameB} | Frame ${idx} | ${belong}<br/>Predicted Distance: ${truncTo3Decimals(spd)} u`;
+                            }
+                        },
+                        markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true, formatter: (p) => p
+                                    .value, fontSize: 12, fontWeight: 'bold' } }
+                    });
+                }
+            }
+
+            if (!seriesList.length) {
+                currentChart.setOption({ title: { show: true, text: 'Awaiting data input...', left: 'center',
+                        top: 'center', textStyle: { color: '#0ff' } } });
+                return;
+            }
+
+            const legendData = seriesList.map(s => ({
                 name: s.name,
-                start: startIdx,
-                end: endIdx,
-                data: s.data.slice()
-            });
+                icon: 'circle',
+                itemStyle: { color: s.lineStyle.color }
+            }));
+
+            let maxFrames = Math.max(dataA?.continuousData?.length || 0, dataB?.continuousData?.length || 0);
+            const xAxisData = Array.from({ length: maxFrames }, (_, i) => i.toString());
+
+            const option = {
+                backgroundColor: '#03060c',
+                tooltip: { trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: '#0ff1' } },
+                    backgroundColor: '#0a122dd9', borderColor: '#0ff', borderWidth: 0.8,
+                    textStyle: { color: '#e0f2fe', fontSize: 11 } },
+                legend: {
+                    data: legendData,
+                    textStyle: { color: '#ccf4ff' },
+                    left: 'left',
+                    top: 0,
+                    backgroundColor: '#0a122daa',
+                    borderRadius: 20,
+                    padding: [4, 12],
+                    itemWidth: 16,
+                    itemHeight: 12,
+                    itemStyle: { borderWidth: 0 }
+                },
+                grid: { left: '6%', right: '5%', top: '14%', bottom: '12%', borderWidth: 0, containLabel: false },
+                xAxis: {
+                    type: 'category', data: xAxisData, name: 'Frame', nameLocation: 'middle', nameGap: 35,
+                    nameTextStyle: { color: '#9ad7ff' },
+                    axisLabel: { color: '#9bc0e0', fontSize: 9, rotate: 0, interval: Math.ceil(maxFrames / 25) },
+                    axisLine: { lineStyle: { color: '#2e6a9e' } }, axisTick: { show: false },
+                    splitLine: { show: false }
+                },
+                yAxis: {
+                    type: 'value', name: 'Predicted Distance (units)', nameLocation: 'middle', nameGap: 45,
+                    nameTextStyle: { color: '#9ad7ff' },
+                    axisLabel: { color: '#bbd9ff', fontSize: 10 },
+                    splitLine: { lineStyle: { color: '#1e3a5f', type: 'dashed' } },
+                    axisLine: { show: false }, scale: true
+                },
+                series: seriesList,
+                dataZoom: [
+                    { type: 'slider', start: 0, end: 100, bottom: 12, height: 18, borderColor: '#0ff',
+                        fillerColor: '#0ff2', handleStyle: { color: '#0ff' } },
+                    { type: 'inside', start: 0, end: 100 }
+                ]
+            };
+            currentChart.setOption(option, true);
+            window.addEventListener('resize', () => currentChart && currentChart.resize());
         }
-        
-        const globalMax = Math.max(...continuousData);
-        if (metadata.maxSpeed === null || metadata.maxSpeed < globalMax) metadata.maxSpeed = globalMax;
-        if (metadata.gain === null && metadata.initial !== null) metadata.gain = metadata.maxSpeed - metadata.initial;
-        
-        const totalFrames = continuousData.length;
-        
-        return { metadata, strafes: strafeList, continuousData, segments, totalFrames };
-    }
-    
-    function extractNumbersFromLine(line) {
-        const parts = line.split('|');
-        const values = [];
-        for (let part of parts) {
-            let cleaned = part.trim().replace(/Strafe\s+\d+\s*:/i, '').trim();
-            if (cleaned === "") continue;
-            let num = parseFloat(cleaned);
-            if (!isNaN(num) && isFinite(num)) values.push(num);
-        }
-        return values;
-    }
-    
-    function updateStatsAndTable(data, statsDivId, tableId, neonColor) {
-        const statsDiv = document.getElementById(statsDivId);
-        const tbody = document.querySelector(`#${tableId} tbody`);
-        if (!data) {
-            statsDiv.innerHTML = `<span>⚠️ No data</span>`;
-            if (tbody) tbody.innerHTML = '<tr><td colspan="6">— no data —</td></tr>';
-            return;
-        }
-        const { metadata, strafes, totalFrames } = data;
-        const initialTrunc = truncTo3Decimals(metadata.initial);
-        const maxTrunc = truncTo3Decimals(metadata.maxSpeed);
-        const gainTrunc = metadata.gain !== null ? truncTo3Decimals(metadata.gain) : '';
-        const gainHtml = metadata.gain !== null ? ` (+${gainTrunc})` : '';
-        statsDiv.innerHTML = `
-            <span>Initial: <strong style="color:#0ff">${initialTrunc}</strong></span>
-            <span>Max: <strong style="color:#ffb347">${maxTrunc}</strong>${gainHtml}</span>
-            <span>Strafes: <strong>${strafes.length}</strong></span>
-            <span>Frames: <strong>${totalFrames}</strong></span>
-        `;
-        let html = '';
-        for (let s of strafes) {
-            const arr = s.data;
-            if (!arr.length) continue;
-            const startVal = arr[0];
-            const maxVal = s.maxValue;
-            const endVal = arr[arr.length-1];
-            const gainDelta = s.gainDeltaMax;
-            const frameCount = s.originalFrameCount || arr.length;
-            html += `<tr>
-                <td><strong>${s.name}</strong></td>
-                <td>${frameCount}</td>
-                <td>${truncTo3Decimals(startVal)}</td>
-                <td style="color:${neonColor}; font-weight:700;">${truncTo3Decimals(maxVal)}</td>
-                <td>${truncTo3Decimals(endVal)}</td>
-                <td style="color:${gainDelta>=0?'#3be87e':'#ff6b6b'}">${gainDelta>=0?'+':''}${truncTo3Decimals(gainDelta)}</td>
-            </tr>`;
-        }
-        if (html === '') html = '<tr><td colspan="6">No valid segments</td></tr>';
-        if (tbody) tbody.innerHTML = html;
-    }
-    
-    function getKeyPoints(continuousData, segments) {
-        const points = new Map();
-        if (continuousData.length > 0) points.set(0, continuousData[0]);
-        for (let seg of segments) {
-            let maxVal = -Infinity, maxIdx = seg.start;
-            for (let i = seg.start; i <= seg.end; i++) {
-                if (continuousData[i] > maxVal) { maxVal = continuousData[i]; maxIdx = i; }
+
+        let parsedA = null,
+            parsedB = null;
+
+        function updateBoth() {
+            const textA = document.getElementById('dataA').value;
+            const textB = document.getElementById('dataB').value;
+            const errDiv = document.getElementById('globalError');
+            errDiv.style.display = 'none';
+            let errMsg = '';
+
+            try {
+                parsedA = textA.trim() === "" ? null : parseKZData(textA, "A");
+                updateStatsAndTable(parsedA, 'statsA', 'tableA', '#3b82f6');
+            } catch (e) {
+                parsedA = null;
+                updateStatsAndTable(null, 'statsA', 'tableA', '#3b82f6');
+                errMsg += `[Data 01] ${e.message}<br>`;
             }
-            if (isFinite(maxVal)) points.set(maxIdx, maxVal);
-        }
-        const lastIdx = continuousData.length - 1;
-        if (lastIdx >= 0 && lastIdx !== 0) points.set(lastIdx, continuousData[lastIdx]);
-        const sorted = Array.from(points.entries()).sort((a,b) => a[0] - b[0]);
-        return sorted.map(([idx, val]) => [idx, val]);
-    }
-    
-    function generateMaxMarkers(continuousData, segments, glowColor) {
-        const points = [];
-        for (let seg of segments) {
-            let maxVal = -Infinity, maxIdx = seg.start;
-            for (let i = seg.start; i <= seg.end; i++) {
-                if (continuousData[i] > maxVal) { maxVal = continuousData[i]; maxIdx = i; }
+            try {
+                parsedB = textB.trim() === "" ? null : parseKZData(textB, "B");
+                updateStatsAndTable(parsedB, 'statsB', 'tableB', '#f97316');
+            } catch (e) {
+                parsedB = null;
+                updateStatsAndTable(null, 'statsB', 'tableB', '#f97316');
+                errMsg += `[Data 02] ${e.message}<br>`;
             }
-            if (isFinite(maxVal)) {
-                const displayVal = truncTo3Decimals(maxVal);
-                points.push({
-                    name: `${seg.name} MAX`,
-                    coord: [maxIdx, maxVal],
-                    value: displayVal,
-                    symbol: 'circle',
-                    symbolSize: 12,
-                    label: {
-                        show: true,
-                        formatter: `${displayVal}`,
-                        position: 'top',
-                        offset: [0, -10],
-                        color: glowColor,
-                        fontWeight: 'bold',
-                        fontSize: 12,
-                        backgroundColor: '#0a1222dd',
-                        padding: [2, 6, 2, 6],
-                        borderRadius: 8,
-                        borderColor: glowColor,
-                        borderWidth: 1,
-                        fontFamily: 'monospace'
-                    },
-                    itemStyle: { color: glowColor, borderColor: '#000', borderWidth: 2, shadowBlur: 8, shadowColor: glowColor }
-                });
+
+            if (errMsg) { errDiv.style.display = 'block';
+                errDiv.innerHTML = errMsg; }
+
+            let nameA = 'Data 01';
+            let nameB = 'Data 02';
+
+            if (parsedA && parsedA.metadata && parsedA.metadata.file) {
+                nameA = parsedA.metadata.file;
+            } else if (textA.trim() === DEFAULT_WR_DATA) {
+                nameA = '260_lj_komi (WR)';
             }
-        }
-        return points;
-    }
-    
-    let currentChart = null;
-    
-    function renderComparison(dataA, dataB, isDataADefaultWR) {
-        const dom = document.getElementById('compareChart');
-        if (!dom) return;
-        if (currentChart) currentChart.dispose();
-        currentChart = echarts.init(dom);
-        
-        const keyPointsOnly = document.getElementById('keyPointsOnlyCheckbox').checked;
-        const seriesList = [];
-        
-        const dataAName = isDataADefaultWR ? '260_lj_komi (WR)' : 'Data 01';
-        
-        if (dataA && dataA.continuousData?.length) {
-            if (keyPointsOnly) {
-                const keyPoints = getKeyPoints(dataA.continuousData, dataA.segments);
-                const maxMarkers = generateMaxMarkers(dataA.continuousData, dataA.segments, '#3b82f6');
-                seriesList.push({
-                    name: dataAName,
-                    type: 'line',
-                    data: keyPoints,
-                    smooth: false,
-                    symbol: 'none',
-                    lineStyle: { width: 2.5, color: '#3b82f6', shadowBlur: 12, shadowColor: '#3b82f6', type: 'solid' },
-                    areaStyle: { opacity: 0.08, color: '#3b82f6' },
-                    emphasis: { focus: 'series' },
-                    tooltip: {
-                        formatter: (params) => {
-                            if (!params.data) return '';
-                            const frameIdx = params.data[0];
-                            const speed = params.data[1];
-                            let label = '';
-                            if (frameIdx === 0) label = 'Frame 0 (Strafe 01 start)';
-                            else if (frameIdx === dataA.continuousData.length-1) label = 'Last Frame';
-                            else label = 'MAX';
-                            return `🔵 ${dataAName} | Frame ${frameIdx} | ${label}<br/>Predicted Distance: ${truncTo3Decimals(speed)} u`;
-                        }
-                    },
-                    markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true } }
-                });
-            } else {
-                const maxMarkers = generateMaxMarkers(dataA.continuousData, dataA.segments, '#3b82f6');
-                seriesList.push({
-                    name: dataAName,
-                    type: 'line',
-                    data: dataA.continuousData,
-                    smooth: false,
-                    symbol: 'none',
-                    lineStyle: { width: 2.5, color: '#3b82f6', shadowBlur: 12, shadowColor: '#3b82f6' },
-                    areaStyle: { opacity: 0.08, color: '#3b82f6' },
-                    emphasis: { focus: 'series' },
-                    tooltip: {
-                        formatter: (params) => {
-                            if (!params[0]) return '';
-                            let idx = params[0].dataIndex;
-                            let spd = params[0].value;
-                            let belong = '';
-                            for (let s of dataA.segments) {
-                                if (idx >= s.start && idx <= s.end) { belong = s.name; break; }
-                            }
-                            return `🔵 ${dataAName} | Frame ${idx} | ${belong}<br/>Predicted Distance: ${truncTo3Decimals(spd)} u`;
-                        }
-                    },
-                    markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true, formatter: (p) => p.value, fontSize: 12, fontWeight: 'bold' } }
-                });
+
+            if (parsedB && parsedB.metadata && parsedB.metadata.file) {
+                nameB = parsedB.metadata.file;
+            } else if (textB.trim() === DEFAULT_WR_DATA) {
+                nameB = '260_lj_komi (WR)';
             }
+
+            document.getElementById('titleA').textContent = `🔷 ${nameA}`;
+            document.getElementById('titleB').textContent = `🔶 ${nameB}`;
+            document.getElementById('tableTitleA').textContent = nameA;
+            document.getElementById('tableTitleB').textContent = nameB;
+
+            renderComparison(parsedA, parsedB, nameA, nameB);
         }
-        
-        if (dataB && dataB.continuousData?.length) {
-            if (keyPointsOnly) {
-                const keyPoints = getKeyPoints(dataB.continuousData, dataB.segments);
-                const maxMarkers = generateMaxMarkers(dataB.continuousData, dataB.segments, '#f97316');
-                seriesList.push({
-                    name: 'Data 02',
-                    type: 'line',
-                    data: keyPoints,
-                    smooth: false,
-                    symbol: 'none',
-                    lineStyle: { width: 2.5, color: '#f97316', shadowBlur: 12, shadowColor: '#f97316', type: 'solid' },
-                    areaStyle: { opacity: 0.08, color: '#f97316' },
-                    emphasis: { focus: 'series' },
-                    tooltip: {
-                        formatter: (params) => {
-                            if (!params.data) return '';
-                            const frameIdx = params.data[0];
-                            const speed = params.data[1];
-                            let label = '';
-                            if (frameIdx === 0) label = 'Frame 0 (Strafe 01 start)';
-                            else if (frameIdx === dataB.continuousData.length-1) label = 'Last Frame';
-                            else label = 'MAX';
-                            return `🟠 Data 02 | Frame ${frameIdx} | ${label}<br/>Predicted Distance: ${truncTo3Decimals(speed)} u`;
-                        }
-                    },
-                    markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true } }
-                });
-            } else {
-                const maxMarkers = generateMaxMarkers(dataB.continuousData, dataB.segments, '#f97316');
-                seriesList.push({
-                    name: 'Data 02',
-                    type: 'line',
-                    data: dataB.continuousData,
-                    smooth: false,
-                    symbol: 'none',
-                    lineStyle: { width: 2.5, color: '#f97316', shadowBlur: 12, shadowColor: '#f97316' },
-                    areaStyle: { opacity: 0.08, color: '#f97316' },
-                    emphasis: { focus: 'series' },
-                    tooltip: {
-                        formatter: (params) => {
-                            if (!params[0]) return '';
-                            let idx = params[0].dataIndex;
-                            let spd = params[0].value;
-                            let belong = '';
-                            for (let s of dataB.segments) {
-                                if (idx >= s.start && idx <= s.end) { belong = s.name; break; }
-                            }
-                            return `🟠 Data 02 | Frame ${idx} | ${belong}<br/>Predicted Distance: ${truncTo3Decimals(spd)} u`;
-                        }
-                    },
-                    markPoint: { data: maxMarkers, symbolSize: 11, label: { show: true, formatter: (p) => p.value, fontSize: 12, fontWeight: 'bold' } }
-                });
+
+        function onCheckboxChange() {
+            const textA = document.getElementById('dataA').value;
+            const textB = document.getElementById('dataB').value;
+            let nameA = 'Data 01';
+            let nameB = 'Data 02';
+            if (parsedA && parsedA.metadata && parsedA.metadata.file) {
+                nameA = parsedA.metadata.file;
+            } else if (textA.trim() === DEFAULT_WR_DATA) {
+                nameA = '260_lj_komi (WR)';
             }
+            if (parsedB && parsedB.metadata && parsedB.metadata.file) {
+                nameB = parsedB.metadata.file;
+            } else if (textB.trim() === DEFAULT_WR_DATA) {
+                nameB = '260_lj_komi (WR)';
+            }
+            renderComparison(parsedA, parsedB, nameA, nameB);
         }
-        
-        if (!seriesList.length) {
-            currentChart.setOption({ title: { show: true, text: 'Awaiting data input...', left: 'center', top: 'center', textStyle: { color: '#0ff' } } });
-            return;
+
+        function loadExampleA() {
+            document.getElementById('dataA').value = DEFAULT_WR_DATA;
+            updateBoth();
         }
-        
-        const legendData = seriesList.map(s => ({
-            name: s.name,
-            icon: 'circle',
-            itemStyle: { color: s.lineStyle.color }
-        }));
-        
-        let maxFrames = Math.max(dataA?.continuousData?.length || 0, dataB?.continuousData?.length || 0);
-        const xAxisData = Array.from({ length: maxFrames }, (_, i) => i.toString());
-        
-        const option = {
-            backgroundColor: '#03060c',
-            tooltip: { trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: '#0ff1' } }, backgroundColor: '#0a122dd9', borderColor: '#0ff', borderWidth: 0.8, textStyle: { color: '#e0f2fe', fontSize: 11 } },
-            legend: { 
-                data: legendData,
-                textStyle: { color: '#ccf4ff' }, 
-                left: 'left', 
-                top: 0, 
-                backgroundColor: '#0a122daa', 
-                borderRadius: 20, 
-                padding: [4, 12],
-                itemWidth: 16,
-                itemHeight: 12,
-                itemStyle: { borderWidth: 0 }
-            },
-            grid: { left: '6%', right: '5%', top: '14%', bottom: '12%', borderWidth: 0, containLabel: false },
-            xAxis: {
-                type: 'category', data: xAxisData, name: 'Frame', nameLocation: 'middle', nameGap: 35, nameTextStyle: { color: '#9ad7ff' },
-                axisLabel: { color: '#9bc0e0', fontSize: 9, rotate: 0, interval: Math.ceil(maxFrames / 25) },
-                axisLine: { lineStyle: { color: '#2e6a9e' } }, axisTick: { show: false }, splitLine: { show: false }
-            },
-            yAxis: {
-                type: 'value', name: 'Predicted Distance (units)', nameLocation: 'middle', nameGap: 45, nameTextStyle: { color: '#9ad7ff' },
-                axisLabel: { color: '#bbd9ff', fontSize: 10 }, splitLine: { lineStyle: { color: '#1e3a5f', type: 'dashed' } },
-                axisLine: { show: false }, scale: true
-            },
-            series: seriesList,
-            dataZoom: [
-                { type: 'slider', start: 0, end: 100, bottom: 12, height: 18, borderColor: '#0ff', fillerColor: '#0ff2', handleStyle: { color: '#0ff' } },
-                { type: 'inside', start: 0, end: 100 }
-            ]
-        };
-        currentChart.setOption(option, true);
-        window.addEventListener('resize', () => currentChart && currentChart.resize());
-    }
-    
-    let parsedA = null, parsedB = null;
-    
-    function updateBoth() {
-        const textA = document.getElementById('dataA').value;
-        const textB = document.getElementById('dataB').value;
-        const errDiv = document.getElementById('globalError');
-        errDiv.style.display = 'none';
-        let errMsg = '';
-        try {
-            parsedA = textA.trim() === "" ? null : parseKZData(textA, "A");
-            updateStatsAndTable(parsedA, 'statsA', 'tableA', '#3b82f6');
-        } catch(e) { parsedA = null; updateStatsAndTable(null, 'statsA', 'tableA', '#3b82f6'); errMsg += `[Data 01] ${e.message}<br>`; }
-        try {
-            parsedB = textB.trim() === "" ? null : parseKZData(textB, "B");
-            updateStatsAndTable(parsedB, 'statsB', 'tableB', '#f97316');
-        } catch(e) { parsedB = null; updateStatsAndTable(null, 'statsB', 'tableB', '#f97316'); errMsg += `[Data 02] ${e.message}<br>`; }
-        if (errMsg) { errDiv.style.display = 'block'; errDiv.innerHTML = errMsg; }
-        
-        const isDefaultWR = (textA.trim() === DEFAULT_WR_DATA);
-        renderComparison(parsedA, parsedB, isDefaultWR);
-    }
-    
-    function onCheckboxChange() {
-        renderComparison(parsedA, parsedB, (document.getElementById('dataA').value.trim() === DEFAULT_WR_DATA));
-    }
-    
-    function loadExampleA() {
-        document.getElementById('dataA').value = DEFAULT_WR_DATA;
-        updateBoth();
-    }
-    
-    function loadWRForB() {
-        document.getElementById('dataB').value = DEFAULT_WR_DATA;
-        updateBoth();
-    }
-    
-    function clearA() { document.getElementById('dataA').value = ''; updateBoth(); }
-    function clearB() { document.getElementById('dataB').value = ''; updateBoth(); }
-    
-    document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('exampleA').addEventListener('click', loadExampleA);
-        document.getElementById('exampleB').addEventListener('click', loadWRForB);
-        document.getElementById('clearA').addEventListener('click', clearA);
-        document.getElementById('clearB').addEventListener('click', clearB);
-        document.getElementById('dataA').addEventListener('input', updateBoth);
-        document.getElementById('dataB').addEventListener('input', updateBoth);
-        document.getElementById('keyPointsOnlyCheckbox').addEventListener('change', onCheckboxChange);
-        loadExampleA();
-        document.getElementById('dataB').value = '';
-        updateBoth();
-    });
-</script>
+
+        function loadWRForB() {
+            document.getElementById('dataB').value = DEFAULT_WR_DATA;
+            updateBoth();
+        }
+
+        function clearA() { document.getElementById('dataA').value = '';
+            updateBoth(); }
+
+        function clearB() { document.getElementById('dataB').value = '';
+            updateBoth(); }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('exampleA').addEventListener('click', loadExampleA);
+            document.getElementById('exampleB').addEventListener('click', loadWRForB);
+            document.getElementById('clearA').addEventListener('click', clearA);
+            document.getElementById('clearB').addEventListener('click', clearB);
+            document.getElementById('dataA').addEventListener('input', updateBoth);
+            document.getElementById('dataB').addEventListener('input', updateBoth);
+            document.getElementById('keyPointsOnlyCheckbox').addEventListener('change', onCheckboxChange);
+            loadExampleA();
+            document.getElementById('dataB').value = '';
+            updateBoth();
+        });
+    </script>
 </body>
 </html>
